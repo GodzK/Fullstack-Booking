@@ -1,0 +1,202 @@
+/* RESET (Optional) */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* The overall container for the homepage */
+  .homepage {
+    font-family: "Arial", sans-serif;
+    width: 100%;
+    height: 100vh; /* Let the hero fill the full viewport height */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* --- NAVBAR STYLES --- */
+  .navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: #fff; /* White navbar */
+    position: relative;
+    z-index: 10; /* Ensure navbar is on top of the hero overlay */
+  }
+  
+  /* Left part of navbar: logo + nav links */
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+  .nav-logo{
+    width: 50px;
+    scale: 3;
+    margin-left: 50px;
+  }
+  /* Logo */
+  .logo {
+    height: 40px; /* Adjust as needed */
+    margin-right: 1rem;
+  }
+  
+  /* Navigation links */
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+  }
+  
+  .nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-links a:hover {
+    color: #0072ff; /* Example hover color */
+  }
+  
+  /* Right part of navbar: search bar, etc. */
+  .navbar-right {
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-bar {
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-bar input {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+  }
+  
+  .search-bar button {
+    padding: 0.3rem 0.8rem;
+    border: none;
+    background-color: #0072ff;
+    color: #fff;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .search-bar button:hover {
+    background-color: #0059c9;
+  }
+  .homepage{
+    display: flex;
+    flex-direction: column;
+  }
+  .hero-container {
+    flex: 1; 
+    background-image: url("./kmuttbg.png"); 
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Adjust the darkness as needed */
+    z-index: 1; /* ให้ overlay อยู่เหนือพื้นหลัง แต่ใต้เนื้อหาและปุ่ม */
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2; 
+    text-align: center;
+    color: #fff;
+    max-width: 800px; 
+    padding: 0 1rem;
+}
+.neon-text {
+  font-size: 7rem;
+  color: #fff;
+  text-shadow: 0 0 5px #ff005e, 0 0 10px #ff005e, 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 80px #ff005e;
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  0% {
+      text-shadow: 0 0 5px #ff005e, 0 0 10px #ff005e, 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 80px #ff005e;
+  }
+  100% {
+      text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff, 0 0 40px #00d4ff, 0 0 80px #00d4ff, 0 0 160px #00d4ff;
+  }
+}
+.hero-button {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 2; /* ให้ปุ่มอยู่เหนือ overlay */
+    width: 10%;
+}
+  .hero-h1{
+    font-size: 7rem;
+  }
+  /* Main Title */
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Subtitle */
+  .hero-subtitle {
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Description text */
+  .hero-description {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    z-index: 5;
+    color: white;
+  }
+  .right-content{
+    display: flex;
+    flex-direction: column;
+    margin-top: 5%;
+  }
+  
+  .hero-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 4px 15px rgba(255, 255, 255, 0.4);
+  }
+  
+  /* --- MEDIA QUERIES (Optional) --- */
+  /* Example: make text smaller on smaller screens */
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.2rem;
+    }
+    .hero-subtitle {
+      font-size: 1.4rem;
+    }
+  }
+  

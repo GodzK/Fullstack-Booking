@@ -1,0 +1,51 @@
+.rbc-calendar {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .rbc-header {
+    background: #f0f0f0;
+    padding: 10px;
+    font-weight: bold;
+  }
+  
+  .rbc-event {
+    background: #3174ad;
+    color: white;
+    border-radius: 4px;
+    padding: 2px 5px;
+  }
+  
+  .rbc-today {
+    background-color: #eaf6ff;
+  }.shadow-dance-text {
+    font-size: 4rem;
+    color: #fff;
+    text-shadow: 5px 5px 0 #ff005e, 10px 10px 0 #00d4ff;
+    animation: shadow-dance 2s infinite;
+}
+
+@keyframes shadow-dance {
+    0%, 100% {
+        text-shadow: 5px 5px 0 #ff005e, 10px 10px 0 #00d4ff;
+    }
+    50% {
+        text-shadow: -5px -5px 0 #00d4ff, -10px -10px 0 #ff005e;
+    }
+}
+p {
+  font-size: 16px;
+  color: #333;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: underline;
+}
