@@ -3,7 +3,9 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import axios from "axios";
+
 import Swal from "sweetalert2";
+
 const API_URL = "http://localhost:3000/api";
 const localizer = momentLocalizer(moment);
 
@@ -17,6 +19,7 @@ const BookingCalendar = () => {
   const [selectedArea, setSelectedArea] = useState("");
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch User Profile
   useEffect(() => {
@@ -27,77 +30,104 @@ const BookingCalendar = () => {
         });
         setUser(response.data);
       } catch (error) {
-        Swal.fire("Error", "You haven't logged in yet", "error");
-        window.location.href = "/login";
+        if (error.response?.status === 401) {
+          Swal.fire("Error", "You haven't logged in yet", "error");
+          window.location.href = "/login";
+        }
       }
     };
     fetchProfile();
   }, []);
 
-  // Fetch all buildings
+  // Fetch buildings
   useEffect(() => {
     const fetchBuildings = async () => {
+      setIsLoading(true);
       try {
         const response = await axios.get(`${API_URL}/rooms/buildings`, {
           withCredentials: true,
         });
-        setBuildings(response.data.buildings);
+        setBuildings(response.data.buildings || []);
       } catch (err) {
         console.error("Error fetching buildings:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchBuildings();
   }, []);
 
-  // Fetch areas when building is selected
+  // Reset and fetch areas when building changes
   useEffect(() => {
-    if (!selectedBuilding) return;
-    const fetchAreas = async () => {
-      try {
-        const response = await axios.get(
-          `${API_URL}/rooms/areas/${selectedBuilding}`,
-          { withCredentials: true }
-        );
-        setAreas(response.data.areas);
-        setSelectedArea("");
-        setSelectedRoom("");
-      } catch (err) {
-        console.error("Error fetching areas:", err);
-      }
-    };
-    fetchAreas();
+    setSelectedArea("");
+    setSelectedRoom("");
+    setAreas([]);
+    setRooms([]);
+    
+    if (selectedBuilding) {
+      fetchAreas();
+    }
   }, [selectedBuilding]);
 
-  // Fetch rooms when area is selected
+  // Reset and fetch rooms when area changes
   useEffect(() => {
-    if (!selectedArea) return;
-    const fetchRooms = async () => {
-      try {
-        const response = await axios.get(
-          `${API_URL}/rooms/rooms/${selectedArea}`,
-          { withCredentials: true }
-        );
-        setRooms(response.data.rooms);
-        setSelectedRoom("");
-      } catch (err) {
-        console.error("Error fetching rooms:", err);
-      }
-    };
-    fetchRooms();
+    setSelectedRoom("");
+    setRooms([]);
+    
+    if (selectedArea) {
+      fetchRooms();
+    }
   }, [selectedArea]);
 
+  const fetchAreas = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `${API_URL}/rooms/areas/${selectedBuilding}`,
+        { withCredentials: true }
+      );
+      setAreas(response.data.areas || []);
+    } catch (err) {
+      console.error("Error fetching areas:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchRooms = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `${API_URL}/rooms/rooms/${selectedArea}`,
+        { withCredentials: true }
+      );
+      setRooms(response.data.rooms || []);
+    } catch (err) {
+      console.error("Error fetching rooms:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchAllBookings(selectedBuilding, selectedArea, selectedRoom);
+    if (selectedBuilding || selectedArea || selectedRoom) {
+      fetchAllBookings();
+    }
   }, [selectedBuilding, selectedArea, selectedRoom]);
 
-  const fetchAllBookings = async (building = "", area = "", room = "") => {
+  const fetchAllBookings = async () => {
+    setIsLoading(true);
     try {
       const res = await axios.get(`${API_URL}/bookings`, {
-        params: { building, area, room },
+        params: { 
+          building: selectedBuilding, 
+          area: selectedArea, 
+          room: selectedRoom 
+        },
         withCredentials: true,
       });
   
-      const formattedBookings = res.data.bookings.map((booking) => ({
+      const formattedBookings = (res.data.bookings || []).map((booking) => ({
         id: booking.booking_id,
         title: `Booked by ${booking.email}`,
         description: booking.description,
@@ -107,16 +137,31 @@ const BookingCalendar = () => {
         area: booking.area,
         building: booking.building,
         status: booking.status,
+        user_id: booking.user_id
       }));
   
-      console.log(formattedBookings);  
       setBookings(formattedBookings);
     } catch (err) {
       console.error("Error fetching bookings:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSelectSlot = ({ start, end }) => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (start < yesterday) {
+      Swal.fire("Error", "Cannot book time slots more than 1 day in the past", "error");
+      return;
+    }
+
+    if (!selectedRoom) {
+      Swal.fire("Error", "Please select a room first", "error");
+      return;
+    }
+
     setSelectedSlot({ start, end });
   };
 
@@ -130,7 +175,7 @@ const BookingCalendar = () => {
     if (!user || !selectedRoom) {
       Swal.fire(
         "Error",
-        "You need to log in and select a room first!",
+        "Please log in and select a room before booking",
         "error"
       );
       return;
@@ -145,7 +190,7 @@ const BookingCalendar = () => {
       confirmButtonText: "Confirm",
       cancelButtonText: "Cancel",
       inputValidator: (value) => {
-        if (!value) return "You need to provide a description!";
+        if (!value) return "Description is required";
       },
     });
 
@@ -166,194 +211,205 @@ const BookingCalendar = () => {
         { withCredentials: true }
       );
     
-      // เรียก API ให้ Backend ส่ง Email
-      await axios.post(
-        `${API_URL}/send-email`,
-        {
-          to: user.email,
-          subject: "Booking Confirmation",
-          text: `Your booking for room ${selectedRoom} has been submitted and is pending approval.`
-        },
-        { withCredentials: true }
-      );
-    
-      fetchAllBookings(selectedBuilding, selectedArea, selectedRoom);
+      await fetchAllBookings();
       setSelectedSlot(null);
-      Swal.fire("Success", "Booking confirmed, and an email has been sent", "success");
+      Swal.fire("Success", "Booking confirmed", "success");
     } catch (err) {
       console.error("Booking failed:", err);
       Swal.fire("Error", "Booking failed", "error");
     }
-    
   };
 
-  const handleDeleteBooking = async (bookingId) => {
+  const handleDeleteBooking = async (bookingId, userId) => {
+    if (!user) return;
+    
+    if (user.id !== userId && user.role !== 'staff') {
+      Swal.fire("Error", "You can only delete your own bookings", "error");
+      return;
+    }
+
     try {
       await axios.delete(`${API_URL}/bookings/${bookingId}`, {
         withCredentials: true,
       });
-      fetchAllBookings(selectedBuilding, selectedArea, selectedRoom);
+      await fetchAllBookings();
       Swal.fire("Success", "Booking deleted", "success");
     } catch (err) {
       console.error("Deletion failed:", err);
-      Swal.fire("Error", "Deletion failed", "error");
+      Swal.fire("Error", "Failed to delete booking", "error");
     }
   };
 
   const handleUpdateStatus = async (bookingId, status) => {
+    if (!user || user.role !== 'staff') {
+      Swal.fire("Error", "Only staff can update booking status", "error");
+      return;
+    }
+
     try {
       await axios.put(
         `${API_URL}/bookings/${bookingId}`,
         { status },
         { withCredentials: true }
       );
-      fetchAllBookings(selectedBuilding, selectedArea, selectedRoom);
+      await fetchAllBookings();
       Swal.fire("Success", `Booking ${status.toLowerCase()}`, "success");
     } catch (err) {
       console.error("Status update failed:", err);
-      Swal.fire("Error", "Status update failed", "error");
+      Swal.fire("Error", "Failed to update status", "error");
     }
   };
 
-  const filteredBookings = bookings.filter(
-    (booking) =>
-      (!selectedBuilding || booking.building === selectedBuilding) &&
-      (!selectedArea || booking.area === selectedArea) &&
-      (!selectedRoom || booking.room_name === selectedRoom)
-  );
-
   const eventStyleGetter = (event) => {
-    let backgroundColor = "#3174ad"; // Default color
-    if (event.status === "Pending") {
-      backgroundColor = "#ffeb3b"; // Yellow for pending
-    } else if (event.status === "Approved") {
-      backgroundColor = "#4caf50"; // Green for approved
-    } else if (event.status === "Rejected") {
-      backgroundColor = "#f44336"; // Red for rejected
-    }
+    const statusColors = {
+      Pending: "#ffeb3b",
+      Approved: "#4caf50",
+      Rejected: "#f44336"
+    };
+
     return {
       style: {
-        backgroundColor,
+        backgroundColor: statusColors[event.status] || "#3174ad",
         borderRadius: "5px",
         opacity: 0.8,
-        color: "black",
+        color: event.status === "Pending" ? "black" : "white",
         border: "0px",
         display: "block",
       },
     };
   };
 
-  return (
-    <div style={{ height: "500px", margin: "20px" }}>
-      <h1>Bookings Calendar</h1>
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Bookings Calendar</h1>
+
+      {/* Building Selection Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {buildings.map((building) => (
           <div
             key={building}
             onClick={() => setSelectedBuilding(building)}
-            style={{
-              cursor: "pointer",
-              backgroundColor: selectedBuilding === building ? "#4CAF50" : "#f1f1f1",
-              padding: "20px",
-              width: "30%",
-              textAlign: "center",
-              borderRadius: "8px",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              transition: "background-color 0.3s ease",
-            }}
+            className={`cursor-pointer rounded-xl p-6 shadow-lg transition-all duration-300
+              transform hover:scale-105
+              ${selectedBuilding === building 
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                : 'bg-white hover:bg-gray-50'
+              }`}
           >
-            <h3>{building}</h3>
+            <h3 className="text-xl font-semibold mb-2">{building}</h3>
+            <div className={`text-sm ${selectedBuilding === building ? 'text-blue-100' : 'text-gray-500'}`}>
+              Click to select
+            </div>
           </div>
         ))}
       </div>
 
-      {selectedBuilding && (
-        <div>
-          <label>Select Area: </label>
-          <select
-            value={selectedArea}
-            onChange={(e) => setSelectedArea(e.target.value)}
-          >
-            <option value="">-- Select Area --</option>
-            {areas.map((area) => (
-              <option key={area} value={area}>
-                {area}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <div className="space-y-6 mb-8">
+        {selectedBuilding && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Area</label>
+            <select
+              value={selectedArea}
+              onChange={(e) => setSelectedArea(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">-- Select Area --</option>
+              {areas.map((area) => (
+                <option key={area} value={area}>{area}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
-      {selectedArea && (
-        <div>
-          <label>Select Room: </label>
-          <select
-            value={selectedRoom}
-            onChange={(e) => setSelectedRoom(e.target.value)}
-          >
-            <option value="">-- Select Room --</option>
-            {rooms.map((room) => (
-              <option key={room.room_id} value={room.room_id}>
-                {room.room_name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+        {selectedArea && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Room</label>
+            <select
+              value={selectedRoom}
+              onChange={(e) => setSelectedRoom(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">-- Select Room --</option>
+              {rooms.map((room) => (
+                <option key={room.room_id} value={room.room_id}>
+                  {room.room_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
-      <Calendar
-        localizer={localizer}
-        events={filteredBookings}
-        startAccessor="start"
-        endAccessor="end"
-        selectable
-        onSelectSlot={handleSelectSlot}
-        defaultView="week"
-        views={["month", "week", "day"]}
-        eventPropGetter={eventStyleGetter}
-        components={{
-          event: ({ event }) => (
-            <div>
-              <br />
-              <span>{event.title}</span>
-              <br />
-              <br />
-              <small>description : {event.description}</small>
-              <br /> <br />
-              <small>Building: {event.building}</small><br /><br />
-              <small>Floor: {event.area}</small><br /><br />
-              <small>Room name: {event.room_name}</small><br /><br />
-              {user && ( // แสดงปุ่ม Delete สำหรับทั้งนักเรียนและ Staff
-                <>
-                  {user.role === "staff" && ( // แสดงปุ่ม Approve และ Reject เฉพาะ Staff
-                    <>
+      {/* Calendar */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="h-[600px]">
+          <Calendar
+            localizer={localizer}
+            events={bookings}
+            startAccessor="start"
+            endAccessor="end"
+            selectable
+            onSelectSlot={handleSelectSlot}
+            defaultView="week"
+            views={["month", "week", "day"]}
+            eventPropGetter={eventStyleGetter}
+            components={{
+              event: ({ event }) => (
+                <div className="p-2 overflow-auto max-w-full">
+                  <div className="font-semibold mb-1">{event.title}</div>
+                  <div className="text-sm space-y-1">
+                   {event.room_name}
+                  </div>
+            
+                  {user && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {user.role === "staff" && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateStatus(event.id, "Approved");
+                            }}
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateStatus(event.id, "Rejected");
+                            }}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
                       <button
-                        className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded ml-2"
-                        onClick={() => handleUpdateStatus(event.id, "Approved")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteBooking(event.id, event.user_id);
+                        }}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm transition-colors"
                       >
-                        Approve
+                        Delete
                       </button>
-                      <button
-                        className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded ml-2"
-                        onClick={() => handleUpdateStatus(event.id, "Rejected")}
-                      >
-                        Reject
-                      </button>
-                    </>
+                    </div>
                   )}
-                  <button
-                    className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded"
-                    onClick={() => handleDeleteBooking(event.id)}
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          ),
-        }}
-      />
+                </div>
+              ),
+            }}            
+          />
+        </div>
+      </div>
     </div>
   );
 };
