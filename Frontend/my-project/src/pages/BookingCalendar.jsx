@@ -106,6 +106,7 @@ const BookingCalendar = () => {
         room_name: booking.room_name,
         area: booking.area,
         building: booking.building,
+        status: booking.status,
       }));
   
       console.log(formattedBookings);  
@@ -187,12 +188,48 @@ const BookingCalendar = () => {
     }
   };
 
+  const handleUpdateStatus = async (bookingId, status) => {
+    try {
+      await axios.put(
+        `${API_URL}/bookings/${bookingId}`,
+        { status },
+        { withCredentials: true }
+      );
+      fetchAllBookings(selectedBuilding, selectedArea, selectedRoom);
+      Swal.fire("Success", `Booking ${status.toLowerCase()}`, "success");
+    } catch (err) {
+      console.error("Status update failed:", err);
+      Swal.fire("Error", "Status update failed", "error");
+    }
+  };
+
   const filteredBookings = bookings.filter(
     (booking) =>
       (!selectedBuilding || booking.building === selectedBuilding) &&
       (!selectedArea || booking.area === selectedArea) &&
       (!selectedRoom || booking.room_name === selectedRoom)
   );
+
+  const eventStyleGetter = (event) => {
+    let backgroundColor = "#3174ad"; // Default color
+    if (event.status === "Pending") {
+      backgroundColor = "#ffeb3b"; // Yellow for pending
+    } else if (event.status === "Approved") {
+      backgroundColor = "#4caf50"; // Green for approved
+    } else if (event.status === "Rejected") {
+      backgroundColor = "#f44336"; // Red for rejected
+    }
+    return {
+      style: {
+        backgroundColor,
+        borderRadius: "5px",
+        opacity: 0.8,
+        color: "black",
+        border: "0px",
+        display: "block",
+      },
+    };
+  };
 
   return (
     <div style={{ height: "500px", margin: "20px" }}>
@@ -262,6 +299,7 @@ const BookingCalendar = () => {
         onSelectSlot={handleSelectSlot}
         defaultView="week"
         views={["month", "week", "day"]}
+        eventPropGetter={eventStyleGetter}
         components={{
           event: ({ event }) => (
             <div>
@@ -271,13 +309,34 @@ const BookingCalendar = () => {
               <br />
               <small>description : {event.description}</small>
               <br /> <br />
-              {user && (
-                <button
-                  className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded"
-                  onClick={() => handleDeleteBooking(event.id)}
-                >
-                  Delete
-                </button>
+              <small>Building: {event.building}</small><br /><br />
+              <small>Floor: {event.area}</small><br /><br />
+              <small>Room name: {event.room_name}</small><br /><br />
+              {user && ( // แสดงปุ่ม Delete สำหรับทั้งนักเรียนและ Staff
+                <>
+                  {user.role === "staff" && ( // แสดงปุ่ม Approve และ Reject เฉพาะ Staff
+                    <>
+                      <button
+                        className="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-4 border-b-4 border-green-700 hover:border-green-500 rounded ml-2"
+                        onClick={() => handleUpdateStatus(event.id, "Approved")}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded ml-2"
+                        onClick={() => handleUpdateStatus(event.id, "Rejected")}
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  <button
+                    className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded"
+                    onClick={() => handleDeleteBooking(event.id)}
+                  >
+                    Delete
+                  </button>
+                </>
               )}
             </div>
           ),
