@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
-import profile from "./profile.png"
+import profile from "./profile.png";
+
 const API_URL = "http://localhost:3000/api";
 
 const getUserProfile = async () => {
@@ -16,7 +17,7 @@ const logout = async () => {
       title: "Logged out!",
       text: "You have been logged out successfully.",
       icon: "success",
-      confirmButtonText: "OK"
+      confirmButtonText: "OK",
     }).then(() => {
       window.location.href = "/login";
     });
@@ -41,21 +42,21 @@ const ProfilePage = () => {
     fetchProfile();
   }, []);
 
-  if (!user) return <div className="text-center mt-20 text-gray-500">go login</div>;
+  if (!user) return <div className="text-center mt-20 text-gray-500">Go login</div>;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex min-h-screen bg-white text-gray-900"
+      className="flex min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white"
     >
       {/* Sidebar */}
-      <motion.div 
-        initial={{ x: -100 }} 
+      <motion.div
+        initial={{ x: -100 }}
         animate={{ x: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-1/4 bg-white p-6 shadow-xl rounded-r-lg"
+        className="w-1/4 p-6 glassmorphism rounded-r-xl"
       >
         <div className="text-center">
           <motion.img
@@ -64,10 +65,10 @@ const ProfilePage = () => {
             transition={{ duration: 0.5 }}
             src={profile}
             alt="Profile"
-            className="mx-auto rounded-full border-4 border-gray-200 p-2 shadow-md"
+            className="mx-auto w-32 h-32 rounded-full border-4 border-gray-300 p-1 shadow-lg"
           />
-          <h2 className="text-xl font-semibold mt-3">{user.firstname} {user.lastname}</h2>
-          <p className="text-gray-500">{user.email}</p>
+          <h2 className="text-2xl font-bold mt-3">{user.firstname} {user.lastname}</h2>
+          <p className="text-gray-300">{user.email}</p>
         </div>
         <div className="mt-6">
           <motion.button
@@ -82,18 +83,18 @@ const ProfilePage = () => {
       </motion.div>
 
       {/* Profile Info */}
-      <motion.div 
+      <motion.div
         initial={{ x: 100 }}
         animate={{ x: 0 }}
         transition={{ duration: 0.5 }}
         className="w-3/4 p-10"
       >
-        <h1 className="text-3xl font-bold mb-4">Account Info</h1>
-        <motion.div 
+        <h1 className="text-4xl font-extrabold mb-6">Account Info</h1>
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-white p-6 shadow-lg rounded-lg border border-gray-200"
+          className="glassmorphism p-6 shadow-lg rounded-lg border border-gray-600"
         >
           <p className="text-lg"><strong>Firstname:</strong> {user.firstname}</p>
           <p className="text-lg"><strong>Lastname:</strong> {user.lastname}</p>
