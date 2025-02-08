@@ -165,14 +165,26 @@ const BookingCalendar = () => {
         },
         { withCredentials: true }
       );
-
+    
+      // เรียก API ให้ Backend ส่ง Email
+      await axios.post(
+        `${API_URL}/send-email`,
+        {
+          to: user.email,
+          subject: "Booking Confirmation",
+          text: `Your booking for room ${selectedRoom} has been submitted and is pending approval.`
+        },
+        { withCredentials: true }
+      );
+    
       fetchAllBookings(selectedBuilding, selectedArea, selectedRoom);
       setSelectedSlot(null);
-      Swal.fire("Success", "Booking confirmed", "success");
+      Swal.fire("Success", "Booking confirmed, and an email has been sent", "success");
     } catch (err) {
       console.error("Booking failed:", err);
       Swal.fire("Error", "Booking failed", "error");
     }
+    
   };
 
   const handleDeleteBooking = async (bookingId) => {
