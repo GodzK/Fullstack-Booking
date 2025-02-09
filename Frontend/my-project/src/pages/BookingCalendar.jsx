@@ -75,7 +75,7 @@ const BookingCalendar = () => {
     }
   }, [selectedBuilding]);
 
-  // Reset and fetch rooms when area changes
+  // fetch room
   useEffect(() => {
     setSelectedRoom("");
     setRooms([]);
@@ -363,7 +363,7 @@ const BookingCalendar = () => {
         )}
       </div>
 
-      {/* Calendar */}
+   
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="h-[600px]">
           <Calendar
