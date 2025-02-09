@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; 
-import Swal from "sweetalert2"; // ✅ Import SweetAlert
-import loginpic from "./loginpic.png";
+import Swal from "sweetalert2"; 
+import loginpic from "./images/loginpic.png";
 
 const API_URL = "http://localhost:3000/api"; 
 
@@ -12,7 +12,7 @@ const login = async (credentials) => {
 
 function Login() {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const navigate = useNavigate(); // ✅ Use navigate for redirection
+  const navigate = useNavigate(); 
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -24,7 +24,6 @@ function Login() {
       const response = await login(credentials); 
       console.log("Login Successful:", response.data);
 
-      // ✅ SweetAlert Success Message
       Swal.fire({
         title: "Login Successful!",
         text: "Redirecting to Booking Page...",
@@ -33,7 +32,7 @@ function Login() {
         showConfirmButton: false
       });
 
-      // ✅ Redirect to booking page after delay
+    
       setTimeout(() => {
         navigate("/booking");
       }, 2000);
@@ -41,7 +40,7 @@ function Login() {
     } catch (error) {
       console.error("Login Error:", error.response?.data || error.message);
 
-      // ✅ SweetAlert Error Message
+     
       Swal.fire({
         title: "Login Failed!",
         text: error.response?.data?.message || "Invalid credentials",

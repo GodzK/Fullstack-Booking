@@ -1,7 +1,7 @@
 import React from 'react'
 import fullsit from "./fullsit.png"
 import { Link } from 'react-router-dom'
-import profile from "../pages/profile.png"
+import profile from "../pages/images/profile.png"
 import axios from "axios";
 import Swal from "sweetalert2";
 const API_URL = "http://localhost:3000/api";

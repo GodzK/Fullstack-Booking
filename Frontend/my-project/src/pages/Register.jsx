@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { register } from "../api.js";
 import { useNavigate } from "react-router-dom"; 
-import Swal from "sweetalert2"; // ✅ Import SweetAlert
-import regispic from "./regispic.png"
+import Swal from "sweetalert2"; 
+import regispic from "./images/regispic.png"
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +30,7 @@ const Register = () => {
       const response = await register(formData);
       console.log("Registration successful:", response.data);
 
-      // ✅ SweetAlert Success Message
+     
       Swal.fire({
         title: "Registration Successful!",
         text: "Redirecting to Login Page...",
@@ -39,7 +39,7 @@ const Register = () => {
         showConfirmButton: false
       });
 
-      // ✅ Redirect to login page after delay
+    
       setTimeout(() => {
         navigate("/login");
       }, 2000);
@@ -48,7 +48,7 @@ const Register = () => {
       console.error("Registration failed:", error);
       setError(error.response?.data?.message || "Registration failed. Please try again.");
 
-      // ✅ SweetAlert Error Message
+         
       Swal.fire({
         title: "Registration Failed!",
         text: error.response?.data?.message || "Something went wrong!",

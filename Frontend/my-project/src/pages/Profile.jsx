@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
-import profile from "./profile.png";
+import profile from "./images/profile.png";
 
 const API_URL = "http://localhost:3000/api";
 
@@ -94,7 +94,7 @@ const ProfilePage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="glassmorphism p-6 shadow-lg rounded-lg border border-gray-600"
+          className="glassmorphism p-6 shadow-lg rounded-lg border border-white-600"
         >
           <p className="text-lg"><strong>Firstname:</strong> {user.firstname}</p>
           <p className="text-lg"><strong>Lastname:</strong> {user.lastname}</p>

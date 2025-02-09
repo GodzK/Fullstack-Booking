@@ -1,10 +1,8 @@
-  import React from "react";
-  import { Link } from "react-router-dom";
-  import "./homepage.css"; // Make sure the CSS file name matches
-  import sit from "./sit.png";
+  import "./homepage.css"; 
+  import sit from ".././pages/images/sitlogo.png";
   function HomePage() {
     function gologin(){
-      window.location.href = "/login";
+      window.location.href = "/booking";
     }
     return (
       <div className="homepage">
@@ -13,7 +11,8 @@
           <div>
             <div className="hero-content">
               <h1 className="hero-title">
-                <img src={sit} alt="" />
+              <img src={sit} alt="" />
+
               </h1>
               <div className="right-content">
                   <h1 className="neon-text">Booking</h1>

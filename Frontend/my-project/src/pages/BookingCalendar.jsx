@@ -3,7 +3,9 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import axios from "axios";
-
+import lxbuilding from "./images/lxbuilding.png"
+import cb2building from "./images/cb2building.png"
+import sitbuilding from "./images/sitbuilding.png"
 import Swal from "sweetalert2";
 
 const API_URL = "http://localhost:3000/api";
@@ -20,7 +22,11 @@ const BookingCalendar = () => {
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const buildingImages = {
+    LX: lxbuilding,
+    CB2: cb2building,
+    SIT: sitbuilding
+  };
   // Fetch User Profile
   useEffect(() => {
     const fetchProfile = async () => {
@@ -289,28 +295,37 @@ const BookingCalendar = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">Bookings Calendar</h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Buildings</h1>
 
-      {/* Building Selection Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {buildings.map((building) => (
-          <div
-            key={building}
-            onClick={() => setSelectedBuilding(building)}
-            className={`cursor-pointer rounded-xl p-6 shadow-lg transition-all duration-300
-              transform hover:scale-105
-              ${selectedBuilding === building 
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                : 'bg-white hover:bg-gray-50'
-              }`}
-          >
-            <h3 className="text-xl font-semibold mb-2">{building}</h3>
-            <div className={`text-sm ${selectedBuilding === building ? 'text-blue-100' : 'text-gray-500'}`}>
-              Click to select
-            </div>
-          </div>
-        ))}
-      </div>
+     
+
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+{buildings.map((building) => (
+  <div
+    key={building}
+    onClick={() => setSelectedBuilding(building)}
+    className={`relative cursor-pointer rounded-xl shadow-lg transition-all duration-300
+      transform hover:scale-105 overflow-hidden
+      ${selectedBuilding === building 
+        ? 'border-4 border-blue-500' 
+        : 'border-2 border-transparent hover:border-gray-300'
+      }`}
+    style={{
+      backgroundImage: `url(${buildingImages[building] || '/default-image.jpg'})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      height: '300px',
+    }}
+  >
+    <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+    <div className="absolute bottom-4 left-4 text-white z-10">
+      <h3 className="text-2xl font-semibold">{building}</h3>
+      <p className="text-sm">{selectedBuilding === building ? 'Selected' : 'Click to select'}</p>
+    </div>
+  </div>
+))}
+</div>
+
 
       <div className="space-y-6 mb-8">
         {selectedBuilding && (
@@ -366,7 +381,7 @@ const BookingCalendar = () => {
                 <div className="p-2 overflow-auto max-w-full">
                   <div className="font-semibold mb-1">{event.title}</div>
                   <div className="text-sm space-y-1">
-                   {event.room_name}
+                   {event.room_name} {event.description}
                   </div>
             
                   {user && (
